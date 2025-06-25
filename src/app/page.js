@@ -1,95 +1,75 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client';
 
-export default function Home() {
+import styles from '../styles/Landing.module.css';
+import { connectWallet } from '../lib/wallet';
+import { useState } from 'react';
+
+// export const metadata = {
+//   title: 'Crypto Wallet | Trust Wallet Integration',
+//   description: 'A crypto-only wallet powered by Trust Wallet',
+// };
+
+// ✅ Server-side component using async function
+export default async function LandingPage() {
+
+  const [walletAddress, setWalletAddress] = useState(null);
+
+  const handleConnect = async () => {
+    try {
+      const address = await connectWallet();
+      setWalletAddress(address);
+    } catch (error) {
+      console.error("Wallet connection failed:", error);
+    }
+  };
+
+  const res = await fetch(
+    'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,binancecoin&vs_currencies=usd',
+    { next: { revalidate: 6 } } // Cache for 60 seconds
+  );
+  const prices = await res.json();
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.js</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <main className={styles.container}>
+      <header className={styles.header}>
+        <div className={styles.logo}>CryptoWallet</div>
+        <button onClick={handleConnect} className={styles.connectButton}>
+          {walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : 'Connect Wallet'}
+        </button>
+      </header>
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
+      <section className={styles.hero}>
+        <h1>Secure Your Crypto with Trust Wallet</h1>
+        <p>No signup, no fiat. Just you and your wallet.</p>
+        <button className={styles.cta}>Get Started</button>
+      </section>
+
+      <section className={styles.features}>
+        <h2>Features</h2>
+        <ul>
+          <li>✅ Non-custodial — you own your keys</li>
+          <li>✅ No KYC, no fiat — 100% crypto</li>
+          <li>✅ Send & receive instantly</li>
+          <li>✅ Built for Trust Wallet & WalletConnect</li>
+        </ul>
+      </section>
+
+      <section className={styles.prices}>
+        <h2>Live Prices</h2>
+        <div className={styles.priceList}>
+          <div>ETH: ${prices.ethereum.usd}</div>
+          <div>BTC: ${prices.bitcoin.usd}</div>
+          <div>BNB: ${prices.binancecoin.usd}</div>
         </div>
-      </main>
+      </section>
+
       <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+        <span>© {new Date().getFullYear()} CryptoWallet</span>
+        <nav>
+          <a href="#">Privacy</a>
+          <a href="#">GitHub</a>
+        </nav>
       </footer>
-    </div>
+    </main>
   );
 }
